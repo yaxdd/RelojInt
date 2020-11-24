@@ -11,7 +11,9 @@ static void (*IntTask) (void) ;
 /*----------------------------------------------------------------------------
   initialize Push Button Pins (PJ0, PJ1)
  *----------------------------------------------------------------------------*/
-void BTN_Initialize(void) {
+
+void BTN_Initialize (void) {
+
 
   SYSCTL->RCGCGPIO |= (1ul << 8) | (1UL << 0);                /* enable clock for GPIOs    */
   GPIOJ_AHB->DR2R |=  ((1ul << 0) | (1ul << 1)); /* PJ0, PJ1 2-mA Drive       */

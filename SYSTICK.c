@@ -5,14 +5,14 @@
 #include "LCD.h"
 volatile uint32_t msTicks;
 volatile uint32_t curTicks;
-const uint32_t MAX_TICKS = 250;
+static const uint32_t MAX_TICKS = 250;
 volatile int exceeded_dead_time = 0;
 void SysTick_Handler(void) {
   msTicks++;
 }
 void delay (uint32_t time) {
   uint32_t curTicksLocal;
-  curTicks = msTicks;
+  curTicksLocal = msTicks;
   while ((msTicks - curTicksLocal) < time) { __NOP(); }	
 }
 uint32_t initCycle(void){

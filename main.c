@@ -8,10 +8,14 @@
 #include "TIMERS.h"
 #include <inttypes.h>
 static volatile uint32_t ticks;
+static char timeTemp[2];
+static char textLCD[10];
+
 /*----------------------------------------------------------------------------
   MAIN function
  *----------------------------------------------------------------------------*/
 void updateClock(void);
+void handleButtons(void);
 void intToTimeString(uint32_t, char*);
 void intToTimeString(uint32_t n, char *pt){
 	if (n<10){
@@ -37,8 +41,6 @@ int main (void) {
 	uint32_t segundos = 0;
 	uint32_t minutos = 0;
 	uint32_t horas = 0;
-	char timeTemp[2];
-	char textLCD[10];
 	LED_Initialize();
 	SER_Initialize();
 	BTN_Initialize();
