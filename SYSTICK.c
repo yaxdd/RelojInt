@@ -11,9 +11,9 @@ void SysTick_Handler(void) {
   msTicks++;
 }
 void delay (uint32_t time) {
-  uint32_t curTicks;
+  uint32_t curTicksLocal;
   curTicks = msTicks;
-  while ((msTicks - curTicks) < time) { __NOP(); }	
+  while ((msTicks - curTicksLocal) < time) { __NOP(); }	
 }
 uint32_t initCycle(void){
 	curTicks = msTicks;

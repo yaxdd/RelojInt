@@ -15,10 +15,9 @@ void Init_Timer0(void(*task)(void),uint32_t period){
 	TIMER0->TAMR = 0x2; //62.5us*2^32 es el tiempo maximo que podemos obtener
 	TIMER0->TAILR = (period*16*1000)-1; //(period *16) = 1us => (period*16*1000) => 1ms
 	TIMER0->ICR|=0x1;
-	NVIC_EnableIRQ(TIMER0A_IRQn);
 	NVIC_SetPriority(TIMER0A_IRQn, 0);
+	NVIC_EnableIRQ(TIMER0A_IRQn);
 	TIMER0->IMR |= 1ul;	
-		
 }
 
 void Start_Timer0(){

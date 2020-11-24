@@ -7,13 +7,7 @@
 #include "LCD.h"
 #include "TIMERS.h"
 #include <inttypes.h>
-static volatile uint16_t ticks;
-static uint16_t tempTicks = 0;
-static uint16_t segundos = 0;
-static uint16_t minutos = 0;
-static uint16_t horas = 0;
-static 	char timeTemp[2];
-static char textLCD[10];
+static volatile uint32_t ticks;
 /*----------------------------------------------------------------------------
   MAIN function
  *----------------------------------------------------------------------------*/
@@ -32,16 +26,29 @@ void intToTimeString(uint32_t n, char *pt){
 void updateClock(){
 	LED_Toggle(1);
 	ticks++; 
+	if (ticks == 86400){
+		ticks = 0;
+	}
+}
+void handleButtons(){
 }
 int main (void) {	
+	uint32_t tempTicks = 0;
+	uint32_t segundos = 0;
+	uint32_t minutos = 0;
+	uint32_t horas = 0;
+	char timeTemp[2];
+	char textLCD[10];
 	LED_Initialize();
 	SER_Initialize();
+	BTN_Initialize();
+	BTN_SetupInt(handleButtons);
 	Init_Timer0(updateClock,1000);
 	initSysTick1ms();
 	LCD_Init();
 	LCD_Clear();
 	LCD_OutString("00:00:00");
-	returnHome();
+	LCD_ReturnHome();
 	Start_Timer0();
 	for(;;){
 		tempTicks = ticks;
@@ -61,7 +68,7 @@ int main (void) {
 		textLCD[6]=timeTemp[0];
 		textLCD[7]=timeTemp[1];
 		LCD_OutString(textLCD);
-		returnHome();
+		LCD_ReturnHome();
 	}
 
 }

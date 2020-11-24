@@ -6,10 +6,12 @@
 #include <inttypes.h>
 #include "Serial.h"
 #include <stdio.h>
+#include "BTN.h"
+static void (*IntTask) (void) ;
 /*----------------------------------------------------------------------------
   initialize Push Button Pins (PJ0, PJ1)
  *----------------------------------------------------------------------------*/
-static void BTN_Initialize (void) {
+void BTN_Initialize(void) {
 
   SYSCTL->RCGCGPIO |= (1ul << 8) | (1UL << 0);                /* enable clock for GPIOs    */
   GPIOJ_AHB->DR2R |=  ((1ul << 0) | (1ul << 1)); /* PJ0, PJ1 2-mA Drive       */
@@ -17,7 +19,6 @@ static void BTN_Initialize (void) {
   GPIOJ_AHB->DIR  &= ~((1ul << 0) | (1ul << 1)); /* PJ0, PJ1 is intput        */
   GPIOJ_AHB->DEN  |=  ((1ul << 0) | (1ul << 1)); /* PJ0, PJ1 is digital func. */
 	GPIOA_AHB->DR2R |=  ((1ul << 4) | (1ul << 5)); 
- 
   GPIOA_AHB->PDR  |=  ((1ul << 4) | (1ul << 5)); 
 	GPIOJ_AHB->DR2R |=  ((1ul << 4) | (1ul << 5)); /* PJ0, PJ1 2-mA Drive       */
   GPIOA_AHB->DIR  &=  ~((1ul << 4) | (1ul << 5)); 
@@ -28,11 +29,30 @@ static void BTN_Initialize (void) {
 /*----------------------------------------------------------------------------
   Get Push Button status
  *----------------------------------------------------------------------------*/
-static uint32_t BTN_Get (void) {
+uint32_t BTN_Get (void) {
 	uint32_t pressed = 0;
 	pressed|=~(GPIOJ_AHB->DATA)& (1ul << 0);
 	pressed|=~(GPIOJ_AHB->DATA)& (1ul << 1);
 	pressed|=(((GPIOA_AHB->DATA)& (1ul << 4))>>(2));
 	pressed|=(((GPIOA_AHB->DATA)& (1ul << 5))>>(2));
 	return pressed;
+}
+
+void BTN_SetupInt(void(*task)(void)){
+	GPIOJ_AHB->IM &= ~(0x03);
+	IntTask = task;
+	GPIOJ_AHB->IS &= ~(0x00);
+	GPIOJ_AHB->IBE |= ~(0x03);
+	GPIOJ_AHB->IEV &= ~(0x00);
+	GPIOJ_AHB->ICR |= 0x03;
+	GPIOJ_AHB->IM |= 0x03;
+	NVIC_SetPriority(GPIOJ_IRQn,7);
+	NVIC_EnableIRQ(GPIOJ_IRQn);
+}
+
+void GPIOJ_Handler(){
+	GPIOJ_AHB->ICR = 0x00;
+	uint32_t result = BTN_Get();
+	__NOP();
+	(*IntTask)();
 }

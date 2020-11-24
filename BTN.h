@@ -18,5 +18,7 @@
 
 extern void     BTN_Initialize(void);
 extern uint32_t BTN_Get      (void);
+extern void BTN_SetupInt(void(*)(void));
+extern void GPIOJ_Handler(void);
 
 #endif

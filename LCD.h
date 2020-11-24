@@ -78,4 +78,4 @@ extern void LCD_OutUDec(uint32_t n);
 // Variable format 1 to 8 digits with no space before or after
 extern void LCD_OutUHex(uint32_t number);
 extern void LCD_OutUTime(uint32_t n);
-extern void returnHome(void);
+extern void LCD_ReturnHome(void);

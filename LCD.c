@@ -135,7 +135,7 @@ void LCD_OutUHex(uint32_t number){
   }
 }
 
-void returnHome(){
+void LCD_ReturnHome(){
   OutCmd(0x02);          // Cursor to home
   delay(2); // wait 1.6ms
 }
