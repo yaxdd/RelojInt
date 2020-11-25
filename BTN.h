@@ -18,7 +18,12 @@
 
 extern void     BTN_Initialize(void);
 extern uint32_t BTN_Get      (void);
-extern void BTN_SetupInt(void(*)(void));
+extern void BTN_SetupInt(void(*)(uint32_t));
 extern void GPIOJ_Handler(void);
+extern void GPIOA_Handler(void);
+extern void BTN_Change_EventFall(void);
+extern void BTN_Change_EventRise(void);
+extern void BTN_DisableInt(void);
+extern void BTN_EnableInt(void);
 
 #endif

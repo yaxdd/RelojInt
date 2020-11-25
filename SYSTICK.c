@@ -37,7 +37,7 @@ uint64_t singleTest(int log){
 		delay(200);
 		waitEndCycle();
 		cycle++;
-	};
+	}
 	for(i=11;i>1;i--){
 		promedio+=array[i]-array[i-1];
 		if (log==1){

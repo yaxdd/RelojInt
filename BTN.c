@@ -7,24 +7,23 @@
 #include "Serial.h"
 #include <stdio.h>
 #include "BTN.h"
-static void (*IntTask) (void) ;
+static void (*IntTask) (uint32_t) ;
 /*----------------------------------------------------------------------------
-  initialize Push Button Pins (PJ0, PJ1)
+  initialize Push Button Pins (PJ0, PJ1 , PA4, PA5)
  *----------------------------------------------------------------------------*/
 
 void BTN_Initialize (void) {
 
 
-  SYSCTL->RCGCGPIO |= (1ul << 8) | (1UL << 0);                /* enable clock for GPIOs    */
-  GPIOJ_AHB->DR2R |=  ((1ul << 0) | (1ul << 1)); /* PJ0, PJ1 2-mA Drive       */
-  GPIOJ_AHB->PUR  |=  ((1ul << 0) | (1ul << 1)); /* PJ0, PJ1 pull-down          */
-  GPIOJ_AHB->DIR  &= ~((1ul << 0) | (1ul << 1)); /* PJ0, PJ1 is intput        */
-  GPIOJ_AHB->DEN  |=  ((1ul << 0) | (1ul << 1)); /* PJ0, PJ1 is digital func. */
-	GPIOA_AHB->DR2R |=  ((1ul << 4) | (1ul << 5)); 
-  GPIOA_AHB->PDR  |=  ((1ul << 4) | (1ul << 5)); 
-	GPIOJ_AHB->DR2R |=  ((1ul << 4) | (1ul << 5)); /* PJ0, PJ1 2-mA Drive       */
-  GPIOA_AHB->DIR  &=  ~((1ul << 4) | (1ul << 5)); 
-  GPIOA_AHB->DEN  |= ((1ul << 4) | (1ul << 5)); 
+  SYSCTL->RCGCGPIO |=  (1UL << 0);                /* enable clock for GPIOs    */
+//  GPIOJ_AHB->DR2R |=  ((1ul << 0) | (1ul << 1)); /* PJ0, PJ1 2-mA Drive       */
+//  GPIOJ_AHB->PUR  |=  ((1ul << 0) | (1ul << 1)); /* PJ0, PJ1 pull-down          */
+//  GPIOJ_AHB->DIR  &= ~((1ul << 0) | (1ul << 1)); /* PJ0, PJ1 is intput        */
+//  GPIOJ_AHB->DEN  |=  ((1ul << 0) | (1ul << 1)); /* PJ0, PJ1 is digital func. */
+	GPIOA_AHB->DR2R |=  ((1ul << 2) |(1ul << 3) |(1ul << 4) | (1ul << 5)); 
+  GPIOA_AHB->PDR  |=  ((1ul << 2) |(1ul << 3) |(1ul << 4) | (1ul << 5)); 
+  GPIOA_AHB->DIR  &=  ~((1ul << 2) |(1ul << 3) |(1ul << 4) | (1ul << 5)); 
+  GPIOA_AHB->DEN  |= ((1ul << 2) |(1ul << 3) |(1ul << 4) | (1ul << 5)); 
 }
 
 
@@ -32,29 +31,51 @@ void BTN_Initialize (void) {
   Get Push Button status
  *----------------------------------------------------------------------------*/
 uint32_t BTN_Get (void) {
-	uint32_t pressed = 0;
-	pressed|=~(GPIOJ_AHB->DATA)& (1ul << 0);
-	pressed|=~(GPIOJ_AHB->DATA)& (1ul << 1);
-	pressed|=(((GPIOA_AHB->DATA)& (1ul << 4))>>(2));
-	pressed|=(((GPIOA_AHB->DATA)& (1ul << 5))>>(2));
-	return pressed;
+
+	if (((GPIOA_AHB->DATA) & (1ul << 2)) == (1ul << 2)){
+		return 4;
+	} else if (((GPIOA_AHB->DATA) & (1ul << 3)) == (1ul << 3)){
+		return 3;
+	} else if (((GPIOA_AHB->DATA) & (1ul << 4)) == (1ul << 4)){
+		return 2;
+	} else if (((GPIOA_AHB->DATA) & (1ul << 5)) == (1ul << 5)){
+		return 1;
+	} else {
+		return 0;
+	}
 }
 
-void BTN_SetupInt(void(*task)(void)){
-	GPIOJ_AHB->IM &= ~(0x03);
+void BTN_SetupInt(void(*task)(uint32_t)){
+	
+//	GPIOJ_AHB->IM &= ~((1ul << 0) | (1ul << 1));
+//	GPIOJ_AHB->IS &= ~(0ul);
+//	GPIOJ_AHB->IBE |= ~((1ul << 0) | (1ul << 1));
+//	GPIOJ_AHB->IEV &=  ~((1ul << 0) | (1ul << 1));
+//	GPIOJ_AHB->ICR |= ((1ul << 0) | (1ul << 1));
+	GPIOA_AHB->IM &= ~((1ul << 2) |(1ul << 3) |(1ul << 4) | (1ul << 5));
+	GPIOA_AHB->IS &= ~(0ul);
+	GPIOA_AHB->IBE &= ~((1ul << 2) |(1ul << 3) |(1ul << 4) | (1ul << 5));
+	GPIOA_AHB->IEV  |= ((1ul << 2) |(1ul << 3) |(1ul << 4) | (1ul << 5));
+	GPIOA_AHB->ICR |= ((1ul << 2) |(1ul << 3) |(1ul << 4) | (1ul << 5));
 	IntTask = task;
-	GPIOJ_AHB->IS &= ~(0x00);
-	GPIOJ_AHB->IBE |= ~(0x03);
-	GPIOJ_AHB->IEV &= ~(0x00);
-	GPIOJ_AHB->ICR |= 0x03;
-	GPIOJ_AHB->IM |= 0x03;
-	NVIC_SetPriority(GPIOJ_IRQn,7);
-	NVIC_EnableIRQ(GPIOJ_IRQn);
+	GPIOA_AHB->IM |= ((1ul << 2) |(1ul << 3) |(1ul << 4) | (1ul << 5));
+	//GPIOJ_AHB->IM |= ((1ul << 0) | (1ul << 1));
+	NVIC_SetPriority(GPIOA_IRQn,7);
+	NVIC_EnableIRQ(GPIOA_IRQn);
 }
-
-void GPIOJ_Handler(){
-	GPIOJ_AHB->ICR = 0x00;
-	uint32_t result = BTN_Get();
-	__NOP();
-	(*IntTask)();
+void BTN_DisableInt(){
+	NVIC_DisableIRQ(GPIOA_IRQn);
 }
+void BTN_EnableInt(){
+	NVIC_EnableIRQ(GPIOA_IRQn);
+}
+void GPIOA_Handler(){
+	GPIOA_AHB->ICR |= ((1ul << 2) |(1ul << 3) |(1ul << 4) | (1ul << 5));
+	uint32_t btns= BTN_Get();
+	(*IntTask)(btns);
+}
+//void GPIOJ_Handler(){
+//	GPIOJ_AHB->ICR |= ((1ul << 0) | (1ul << 1));
+//	uint32_t btns= BTN_Get();
+//	(*IntTask)(btns);
+//}
